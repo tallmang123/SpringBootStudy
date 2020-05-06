@@ -45,7 +45,7 @@ public class JpaConfig {
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 		emf.setDataSource(dataSource);
 		emf.setPackagesToScan("com.tallmang.entity");
-		//emf.setJpaVendorAdapter(hibernateJpaVendorAdapter());
+		emf.setJpaVendorAdapter(hibernateJpaVendorAdapter());
 		
 		return emf;
 	}
