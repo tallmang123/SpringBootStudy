@@ -15,7 +15,7 @@ import com.tallmang.repository.AccountRepository;
 @Transactional
 public class AccountService {
 	
-	//@Autowired
+	@Autowired
 	AccountMapper accountMapper;
 	
 	@Autowired
