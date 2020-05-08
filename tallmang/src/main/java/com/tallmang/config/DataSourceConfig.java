@@ -72,7 +72,8 @@ public class DataSourceConfig {
 	 * @throws Exception
 	 */
 	@Bean(name="mybatisSqlSessionTemplate")
-	public SqlSessionTemplate mybatisSqlSessionTemplate(@Qualifier("mybatisSqlSessionFactory")SqlSessionFactory sqlSessionFactory) throws Exception {
+	public SqlSessionTemplate mybatisSqlSessionTemplate(@Qualifier("mybatisSqlSessionFactory")SqlSessionFactory sqlSessionFactory) throws Exception 
+	{
 		SqlSessionTemplate sqlSessionTemplate = new SqlSessionTemplate(sqlSessionFactory);
 		return sqlSessionTemplate;
 	}
@@ -92,7 +93,8 @@ public class DataSourceConfig {
 	// 
 	@Bean(name="entityManagerFactory") 	 
 	@Primary
-	public LocalContainerEntityManagerFactoryBean jpaEntityManagerFactory(@Qualifier("mysqlDataSource") DataSource dataSource) {
+	public LocalContainerEntityManagerFactoryBean jpaEntityManagerFactory(@Qualifier("mysqlDataSource") DataSource dataSource) 
+	{
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 		emf.setDataSource(dataSource);
 		emf.setPackagesToScan("com.tallmang.entity");
@@ -106,7 +108,8 @@ public class DataSourceConfig {
 	 * @return
 	 */
 	@Bean 
-	public HibernateJpaVendorAdapter hibernateJpaVendorAdapter() { 
+	public HibernateJpaVendorAdapter hibernateJpaVendorAdapter() 
+	{ 
 		HibernateJpaVendorAdapter hibernateJpaVendorAdapter = new HibernateJpaVendorAdapter(); 
 		hibernateJpaVendorAdapter.setShowSql(true); 
 		return hibernateJpaVendorAdapter; 
@@ -128,7 +131,8 @@ public class DataSourceConfig {
 	 * @return
 	 */
 	@Bean(name="transactionManager") 
-    public PlatformTransactionManager jpaTransactionManager(@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory, @Qualifier("mysqlDataSource")DataSource mybatisDataSource) {
+    public PlatformTransactionManager jpaTransactionManager(@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory, @Qualifier("mysqlDataSource")DataSource mybatisDataSource) 
+	{
 		//JPA Transaction
         JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
         jpaTransactionManager.setEntityManagerFactory(entityManagerFactory);
