@@ -14,7 +14,9 @@ public class RedisConfig {
 	
 	/**
 	 * RedisConnectionFactory Class
-	 * {@link LettuceConnection} is faster than {@link JedisConnection} because it works asynchronous
+	 * {@link LettuceConnection} is faster than {@link JedisConnection}
+	 * 1. Works asynchronous 
+	 * 2. Use Connection Pool
 	 * @return
 	 */
 	@Bean

@@ -19,6 +19,11 @@ spring:
       hibernate:
         format_sql: true
   redis:
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 10
+        min-idle: 2
     host: localhost
     port: 6379
   
