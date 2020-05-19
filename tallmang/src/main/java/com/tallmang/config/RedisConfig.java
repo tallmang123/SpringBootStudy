@@ -1,5 +1,6 @@
 package com.tallmang.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -8,9 +9,37 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
 @Configuration
+@EnableRedisHttpSession
 public class RedisConfig {
+	
+	/**
+	 * https://docs.spring.io/spring-session/docs/current/reference/html5/#httpsession
+	 * EnableRedisHttpSession : make session data in redis
+	 * When the session is expired and the data is deleted, the data is deleted and an event is generated when redis is searched using the actually issued session key.
+	 *  1. spring:session:sessions:expires (string)
+	 *   -> If you rely on the expiration time of sessionkey, data cannot be tracked after the expiration time, so it is managed as separate key-value. 
+	 *	2. spring:session:expirations (set) 
+	 *   -> If there is no data request and no expire event occurs, the data remains even after the expiration point.
+			Therefore, in order to remove this, keys are separately managed based on expirations and used to expire by requesting the values 
+			​​in the value with redis every second.
+	 *	3. spring:session:sessions (hash) -> session Data
+	 */
+	
+	/**
+	 * Need to search 
+	 * 1. set session data
+	 * 2. remove session data
+	 * 3. renew session data
+	 * 4. watching expire and delete event
+	 */
+    @Value("${spring.redis.host}")
+    private String redisHost;
+
+    @Value("${spring.redis.port}")
+    private int redisPort;
 	
 	/**
 	 * RedisConnectionFactory Class
@@ -22,7 +51,7 @@ public class RedisConfig {
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() 
 	{
-		LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory();
+		LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisHost,redisPort);
 		return lettuceConnectionFactory;
 	}
 	

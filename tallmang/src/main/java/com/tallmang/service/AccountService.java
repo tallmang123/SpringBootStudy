@@ -2,7 +2,10 @@ package com.tallmang.service;
 
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,9 @@ public class AccountService {
 	@Autowired
 	AccountRepository accountRepository;
 	
+	@Autowired
+	RedisTemplate<String, Object> redisTemplate;
+	
 	public AccountVO getAccountInfo()
 	{
 		AccountVO account = accountMapper.getUser();
@@ -32,6 +38,18 @@ public class AccountService {
 	{
 		List<AccountEntity> accountEntityList = accountRepository.findAll();
 		return accountEntityList;
+	}
+	
+	public String getRedisData()
+	{	
+		redisTemplate.opsForValue().set("test", "This is Test");
+		String result = (String) redisTemplate.opsForValue().get("test");
+		return result;
+	}
+	
+	public String getSessionRedis(HttpSession httpSession)
+	{
+		return httpSession.getId();	
 	}
 
 }

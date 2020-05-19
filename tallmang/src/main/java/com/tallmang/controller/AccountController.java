@@ -2,6 +2,8 @@ package com.tallmang.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpSession;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,6 +32,18 @@ public class AccountController {
 	public String testJpa() {
 		List<AccountEntity> accountEntityList = accountService.getAccountInfoJpa();
 		return accountEntityList.toString();
+	}
+	
+	@GetMapping(value="redis")
+	public String testRedis(){
+		String result = accountService.getRedisData();
+		return result;
+	}
+	
+	@GetMapping(value="redisSession")
+	public String testRedisSession(HttpSession httpSession){
+		String result = accountService.getSessionRedis(httpSession);
+		return result;
 	}
 	
 	
