@@ -14,9 +14,8 @@ import com.tallmang.service.AccountService;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RestController
-public class AccountController {
+public class TestController {
 	
 	@Autowired
 	AccountService accountService;
