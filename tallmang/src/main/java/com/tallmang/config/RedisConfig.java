@@ -12,7 +12,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
 @Configuration
-@EnableRedisHttpSession
+@EnableRedisHttpSession(maxInactiveIntervalInSeconds = 60)
 public class RedisConfig {
 	
 	/**
@@ -22,19 +22,15 @@ public class RedisConfig {
 	 *  1. spring:session:sessions:expires (string)
 	 *   -> If you rely on the expiration time of sessionkey, data cannot be tracked after the expiration time, so it is managed as separate key-value. 
 	 *	2. spring:session:expirations (set) 
-	 *   -> If there is no data request and no expire event occurs, the data remains even after the expiration point.
+	 *   -> * If there is no data request and no expire event occurs, the data remains even after the expiration point.
 			Therefore, in order to remove this, keys are separately managed based on expirations and used to expire by requesting the values 
 			​​in the value with redis every second.
 	 *	3. spring:session:sessions (hash) -> session Data
+	 *     * Note that the expiration that is set to five minutes after the session actually expires. 
+	 *		This is necessary so that the value of the session can be accessed when the session expires. 
+	 *		-> It is too risky so watch expire event and delete session immediately
 	 */
 	
-	/**
-	 * Need to search 
-	 * 1. set session data
-	 * 2. remove session data
-	 * 3. renew session data
-	 * 4. watching expire and delete event
-	 */
     @Value("${spring.redis.host}")
     private String redisHost;
 
