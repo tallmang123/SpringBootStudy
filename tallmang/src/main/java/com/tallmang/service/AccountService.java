@@ -4,6 +4,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import com.tallmang.common.ErrorCode;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,12 @@ public class AccountService {
 	@Autowired
 	RedisTemplate<String, Object> redisTemplate;
 	
+	public String manualLoginProcess(String userId, String password)
+	{
+		AccountEntity accountEntity = accountRepository.findById(userId);
+		return null;
+	}
+	
 	public AccountVO getAccountInfo()
 	{
 		AccountVO account = accountMapper.getUser();
@@ -37,6 +45,7 @@ public class AccountService {
 	public List<AccountEntity> getAccountInfoJpa()
 	{
 		List<AccountEntity> accountEntityList = accountRepository.findAll();
+
 		return accountEntityList;
 	}
 	

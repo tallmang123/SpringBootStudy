@@ -9,5 +9,5 @@ import com.tallmang.entity.AccountEntity;
 
 @Repository
 public interface AccountRepository extends JpaRepository<AccountEntity, Integer>{
-	
+	public AccountEntity findById(String id); 
 }
