@@ -9,8 +9,8 @@ class Login extends React.Component{
 		super(props);
 		this.state = 
 		{
-			id : '',
-			passwd : ''
+			userId : '',
+			password : ''
 		}
 		//this.ajaxLogin = this.ajaxLogin.bind(this); -> replace arrow function
 	}
@@ -23,8 +23,7 @@ class Login extends React.Component{
 	
 	
 	ajaxLogin = (e) =>{
-        console.log(md5(this.state.passwd));
-		let url = '/test';
+		let url = '/login';
 		let options = {
 		            method: 'POST',
 		            url: url,
@@ -35,8 +34,8 @@ class Login extends React.Component{
 		            },
 		            data: 
 		            {
-		            	id : this.state.id,
-		            	passwd : this.state.passwd
+		            	userId : this.state.userId,
+		            	password : md5(this.state.password)
 		              
 		            }
 		        };
@@ -60,7 +59,7 @@ class Login extends React.Component{
     						<Form>
     							<Form.Group controlId="formBasicEmail">
     								<Form.Label>Email address</Form.Label>
-    								<Form.Control type="text" placeholder="Enter Id" name="id" onChange={this.updateState}/>
+    								<Form.Control type="text" placeholder="Enter Id" name="userId" onChange={this.updateState}/>
     								<Form.Text className="text-muted">We'll never share your email with anyone else.</Form.Text>
     							</Form.Group>
     							<Form.Group controlId="formBasicPassword">

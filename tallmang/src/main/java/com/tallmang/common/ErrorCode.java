@@ -2,7 +2,13 @@ package com.tallmang.common;
 
 public enum ErrorCode {
     SUCCESS(200,"success"),
-    INVALID_EXCEPTION(9999, "invalid exception");
+    INTERNAL_ERROR(500,"Internal Error"),
+
+    INVALID_PARAMETER(4000, "Invalid Parameter"),
+    INVALID_EXCEPTION(9999, "invalid exception"),
+
+    NO_USER(10000, "No User"),
+    INVALID_PASSWORD(10001, "Password Not Match");
 
     final private Integer code;
     final private String message;

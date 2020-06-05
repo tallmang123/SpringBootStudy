@@ -2,10 +2,13 @@ package com.tallmang.service;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tallmang.common.AuthException;
 import com.tallmang.common.ErrorCode;
-import lombok.NonNull;
+import com.tallmang.common.MessageEncrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -29,10 +32,32 @@ public class AccountService {
 	@Autowired
 	RedisTemplate<String, Object> redisTemplate;
 	
-	public String manualLoginProcess(String userId, String password)
+	public void manualLoginProcess(HttpServletRequest request, String userId, String md5Password) throws Exception
 	{
 		AccountEntity accountEntity = accountRepository.findById(userId);
-		return null;
+		if(accountEntity == null)
+		{
+			throw new AuthException(ErrorCode.NO_USER);
+		}
+
+		/*
+		 * check password
+		 */
+		String salt = accountEntity.getSalt();
+		MessageEncrypt messageEncrypt = new MessageEncrypt();
+		String sha256Password = messageEncrypt.sha256Encrypt(md5Password + salt);
+		if(!accountEntity.getPassword().equals(sha256Password))
+		{
+			throw new AuthException(ErrorCode.INVALID_PASSWORD);
+		}
+
+		/*
+		 * check session (create session and set data)
+		 */
+		ObjectMapper objectMapper = new ObjectMapper();
+		HttpSession httpSession = request.getSession();
+		httpSession.setAttribute("USER",  objectMapper.writeValueAsString(accountEntity));
+
 	}
 	
 	public AccountVO getAccountInfo()
