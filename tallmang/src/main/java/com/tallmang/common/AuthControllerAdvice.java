@@ -18,11 +18,11 @@ public class AuthControllerAdvice {
     @ResponseBody
     public String AuthExceptionHandler(AuthException authException) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String,String> exceptionData = new HashMap<>();
-            exceptionData.put("code",String.valueOf(authException.getErrorCode()));
+            authException.printStackTrace();
+            Map<String,Object> exceptionData = new HashMap<>();
+            exceptionData.put("code",authException.getErrorCode());
             exceptionData.put("message",authException.getErrorMessage());
-            return objectMapper.writeValueAsString(exceptionData);
+            return Json.encodeJsonString(exceptionData);
         } catch (Exception e) {
             e.printStackTrace();
             return "{ \"code\" : " + ErrorCode.INTERNAL_ERROR.getCode() +", \"message\" : \"" + ErrorCode.INTERNAL_ERROR.getMessage() + "\" }";
@@ -33,12 +33,11 @@ public class AuthControllerAdvice {
     @ResponseBody
     public String ExceptionHandler(Exception exception){
         try {
-            Map<String,String> exceptionData = new HashMap<>();
-            exceptionData.put("code",String.valueOf(ErrorCode.INTERNAL_ERROR.getCode()));
+            exception.printStackTrace();
+            Map<String,Object> exceptionData = new HashMap<>();
+            exceptionData.put("code",ErrorCode.INTERNAL_ERROR.getCode());
             exceptionData.put("message",ErrorCode.INTERNAL_ERROR.getMessage());
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(exceptionData);
+            return Json.encodeJsonString(exceptionData);
         } catch (Exception e) {
             e.printStackTrace();
             return "{ \"code\" : " + ErrorCode.INTERNAL_ERROR.getCode() +", \"message\" : \"" + ErrorCode.INTERNAL_ERROR.getMessage() + "\" }";

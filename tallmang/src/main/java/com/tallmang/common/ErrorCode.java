@@ -5,6 +5,11 @@ public enum ErrorCode {
     INTERNAL_ERROR(500,"Internal Error"),
 
     INVALID_PARAMETER(4000, "Invalid Parameter"),
+
+    INVALID_SESSION(5000, "Invalid Session"),
+    INVALID_SESSIONKEY(5001, "Invalid Session Key"),
+
+
     INVALID_EXCEPTION(9999, "invalid exception"),
 
     NO_USER(10000, "No User"),

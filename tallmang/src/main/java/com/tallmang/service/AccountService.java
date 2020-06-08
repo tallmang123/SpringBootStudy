@@ -8,7 +8,8 @@ import javax.servlet.http.HttpSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tallmang.common.AuthException;
 import com.tallmang.common.ErrorCode;
-import com.tallmang.common.MessageEncrypt;
+import com.tallmang.common.encrypt.SHA256;
+import org.h2.engine.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,9 @@ import com.tallmang.repository.AccountRepository;
 @Service
 @Transactional
 public class AccountService {
-	
+
+	@Autowired
+	SessionService sessionService;
 	@Autowired
 	AccountMapper accountMapper;
 	
@@ -40,24 +43,20 @@ public class AccountService {
 			throw new AuthException(ErrorCode.NO_USER);
 		}
 
-		/*
-		 * check password
-		 */
+		//check password
 		String salt = accountEntity.getSalt();
-		MessageEncrypt messageEncrypt = new MessageEncrypt();
-		String sha256Password = messageEncrypt.sha256Encrypt(md5Password + salt);
+		SHA256 sha256 = SHA256.getInstance();
+		String sha256Password = SHA256.encrypt(md5Password + salt);
 		if(!accountEntity.getPassword().equals(sha256Password))
 		{
 			throw new AuthException(ErrorCode.INVALID_PASSWORD);
 		}
 
-		/*
-		 * check session (create session and set data)
-		 */
-		ObjectMapper objectMapper = new ObjectMapper();
+		//create session
+		/*ObjectMapper objectMapper = new ObjectMapper();
 		HttpSession httpSession = request.getSession();
-		httpSession.setAttribute("USER",  objectMapper.writeValueAsString(accountEntity));
-
+		httpSession.setAttribute("USER",  objectMapper.writeValueAsString(accountEntity));*/
+		sessionService.createSession(accountEntity.getId(), accountEntity.getPassword());
 	}
 	
 	public AccountVO getAccountInfo()
