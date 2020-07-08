@@ -14,8 +14,8 @@ public class Json {
         return objectMapper.writeValueAsString(map);
     }
 
-    public static Map<String,String> decodeJsonString(String jsonString) throws Exception
+    public static Map<String,Object> decodeJsonString(String jsonString) throws Exception
     {
-        return objectMapper.readValue(jsonString, new TypeReference<Map<String, String>>(){});
+        return objectMapper.readValue(jsonString, new TypeReference<Map<String, Object>>(){});
     }
 }

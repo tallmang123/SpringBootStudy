@@ -10,7 +10,8 @@ class Login extends React.Component{
 		this.state = 
 		{
 			userId : '',
-			password : ''
+			password : '',
+			autoLogin: false
 		}
 		//this.ajaxLogin = this.ajaxLogin.bind(this); -> replace arrow function
 	}
@@ -20,9 +21,16 @@ class Login extends React.Component{
         });
 
     }
+
+    checkboxHandle = (e) => {
+        const { target: { checked } } = e;
+        this.setState({ autoLogin : checked});
+    };
+
 	
 	
 	ajaxLogin = (e) =>{
+	console.log(this.state);
 		let url = '/login';
 		let options = {
 		            method: 'POST',
@@ -35,8 +43,8 @@ class Login extends React.Component{
 		            data: 
 		            {
 		            	userId : this.state.userId,
-		            	password : md5(this.state.password)
-		              
+		            	password : md5(this.state.password),
+		            	autoLogin : this.state.autoLogin
 		            }
 		        };
 		let response = axios(options);
@@ -57,17 +65,16 @@ class Login extends React.Component{
     					<Col sm></Col>
     					<Col sm>
     						<Form>
-    							<Form.Group controlId="formBasicEmail">
-    								<Form.Label>Email address</Form.Label>
+    							<Form.Group controlId="formBasicId">
+    								<Form.Label>Id</Form.Label>
     								<Form.Control type="text" placeholder="Enter Id" name="userId" onChange={this.updateState}/>
-    								<Form.Text className="text-muted">We'll never share your email with anyone else.</Form.Text>
     							</Form.Group>
     							<Form.Group controlId="formBasicPassword">
     								<Form.Label>Password</Form.Label>
     								<Form.Control type="password" placeholder="Password" name="password" onChange={this.updateState}/>
     							</Form.Group>
     							<Form.Group controlId="formBasicCheckbox">
-    								<Form.Check type="checkbox" label="Auto Login" />
+    								<Form.Check type="checkbox" label="Auto Login" name="autoLogin" defaultChecked={this.state.autoLogin} onChange={this.checkboxHandle}/>
     							</Form.Group>
     							<Button variant="primary" onClick={this.ajaxLogin}>Submit</Button>
     						</Form>

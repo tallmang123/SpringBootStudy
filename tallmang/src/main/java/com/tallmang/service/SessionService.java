@@ -5,12 +5,10 @@ import com.tallmang.common.AuthException;
 import com.tallmang.common.ErrorCode;
 import com.tallmang.common.Json;
 import com.tallmang.common.encrypt.AES256;
-import org.h2.engine.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -18,7 +16,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +53,21 @@ public class SessionService {
 		return attr.getResponse();
 	}
 
-	public void createSession(String id, String password) throws Exception{
+	/**
+	 * todo
+	 *  1.Rules for generating session keys
+	 *  2.What data to store in the session
+	 * @param id
+	 * @param password
+	 * @param userKey
+	 * @return
+	 * @throws Exception
+	 */
+	public String createSession(String id, String password, int userKey) throws Exception{
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss");
+		String currentDate = dateFormat.format(new Date());
+
 		String sessionKey = Base64.getEncoder().encodeToString(AES256.encode( id + password).getBytes());
 		System.out.println(sessionKey);
 		// 1. delete session if it is exists
@@ -74,9 +88,11 @@ public class SessionService {
 		storeIdCookie.setMaxAge(60 * 60); // one hour
 		HttpServletResponse response = this.getResponse();
 		response.addCookie(storeIdCookie);
+
+		return sessionKey;
 	}
 
-	public Map<String,String> getSession() throws Exception{
+	public Map<String, Object> getSession() throws Exception{
 		String sessionKey = "";
 
 		HttpServletRequest request = this.getRequest();
@@ -101,18 +117,18 @@ public class SessionService {
 		return Json.decodeJsonString(sessionJsonData.toString());
 	}
 
-	public String getData(String dataKey) throws Exception{
-		Map<String,String> sessionData = this.getSession();
+	public Object getData(String dataKey) throws Exception{
+		Map<String,Object> sessionData = this.getSession();
 		return sessionData.get(dataKey);
 	}
 
 	public void saveData(String key , String value) throws Exception{
-		Map<String,String> sessionData = this.getSession();
+		Map<String,Object> sessionData = this.getSession();
 		sessionData.put(key,value);
 	}
 
-	public void saveDataList( Map<String,String> dataList) throws Exception{
-		Map<String,String> sessionData = this.getSession();
+	public void saveDataList( Map<String,Object> dataList) throws Exception{
+		Map<String,Object> sessionData = this.getSession();
 		dataList.forEach(sessionData::put);
 	}
 

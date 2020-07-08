@@ -28,17 +28,17 @@ public class LoginController {
 	public String ManualLogin(HttpServletRequest request, @RequestBody String requestJsonBody) throws Exception
 	{
 		//password : sha256(md5(string value) . db salt(3));
-		Map<String, String> requestMap = Json.decodeJsonString(requestJsonBody);
-
+		Map<String, Object> requestMap = Json.decodeJsonString(requestJsonBody);
 		requestMap.forEach((key,value) -> {
 			if(value.toString().isBlank())
 				throw new AuthException(ErrorCode.INVALID_PARAMETER);
 		});
 		String userId		= requestMap.get("userId").toString();
 		String md5Password	= requestMap.get("password").toString();
+		boolean isAutoLogin = Boolean.parseBoolean(requestMap.get("autoLogin").toString());
 
-		accountService.manualLoginProcess(request, userId, md5Password);
-		return null;
+		Map<String, Object> manualLoginResult = accountService.manualLoginProcess(userId, md5Password, isAutoLogin);
+		return Json.encodeJsonString(manualLoginResult);
 	}
 	
 	public String AutoLogin()
