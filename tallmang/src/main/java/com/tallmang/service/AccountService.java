@@ -74,13 +74,17 @@ public class AccountService {
 		String userTSeq = AES256.encode(Integer.toString(userSeq));
 		cookieManager.setData("TSEQ", userTSeq, dataExpire);
 
-		//5. create redis session
-		String sessionKey = Base64.getEncoder().encodeToString(AES256.encode(accountEntity.getId() + "*****" +System.currentTimeMillis()).getBytes());
+		//5. save user token on cookie
 		String token = SHA256.encrypt("tallmang_auth_token" + System.currentTimeMillis());
+		String userTToken = AES256.encode(token);
+		cookieManager.setData("TTOK", userTToken, dataExpire);
+
+		//6. create redis session
+		String sessionKey = Base64.getEncoder().encodeToString(AES256.encode(accountEntity.getId() + "*****" +System.currentTimeMillis()).getBytes());
 		Map<String,Object> sessionSaveData = new HashMap<>();
-		sessionSaveData.put("id",accountEntity.getId());
+		sessionSaveData.put("userId",accountEntity.getId());
 		sessionSaveData.put("userSeq",accountEntity.getSeq());
-		sessionSaveData.put("token",token);
+		sessionSaveData.put("userToken",token);
 		String redisSessionKey = redisSessionManager.createSession(sessionKey,sessionSaveData);
 
 		// 6. save session key on cookie
@@ -88,7 +92,8 @@ public class AccountService {
 
 		//6. save login status and redisSessionKey
 		HttpSession httpSession = request.getSession();
-		httpSession.setAttribute("TSID",redisSessionKey);
+		httpSession.setAttribute("userSeq",accountEntity.getSeq());
+		httpSession.setAttribute("userToken",token);
 		httpSession.setAttribute("isLogin",true);
 
 		Map<String, Object> result = new HashMap<>();
@@ -100,19 +105,75 @@ public class AccountService {
 
 	public Map<String, Object> autoLoginProcess() throws Exception
 	{
-		/*ServletRequestAttributes attr = (ServletRequestAttributes)RequestContextHolder.currentRequestAttributes();
+		ServletRequestAttributes attr = (ServletRequestAttributes)RequestContextHolder.currentRequestAttributes();
 		HttpServletRequest request = attr.getRequest();
 
+		// 1. get Cookie Data
 		Cookie[] getCookie = request.getCookies();
-		String userTSeq = "";
+		String cookieUserSeq = "";
+		String cookieRedisSessionId = "";
+		String cookieUserToken = "";
 		for (Cookie cookie : getCookie) {
-			if (cookie.getName().equals("TSEQ")) {
-				userTSeq = cookie.getValue();
+			if (cookie.getName().equals("TSEQ"))
+			{
+				cookieUserSeq = cookie.getValue();
+			}
+			if (cookie.getName().equals("TTOK"))
+			{
+				cookieRedisSessionId = cookie.getValue();
+			}
+			if (cookie.getName().equals("TSID"))
+			{
+				cookieUserToken = cookie.getValue();
 			}
 		}
+		if(cookieUserSeq.isEmpty() || cookieRedisSessionId.isEmpty() || cookieUserToken.isEmpty())
+		{
+			throw new AuthException(ErrorCode.INVALID_PARAMETER);
+		}
 
-		String userSeq = AES256.decode(userTSeq);*/
+		//decode data
+		cookieUserSeq = AES256.decode(cookieUserSeq);
+		cookieUserToken = AES256.decode(cookieUserToken);
 
+
+		//get http session data
+		HttpSession httpSession = request.getSession();
+		String httpSessionUserSeq = httpSession.getAttribute("userSeq").toString();
+		String httpSessionUserToken = httpSession.getAttribute("userToken").toString();
+		boolean httpSessionIsLogin = Boolean.parseBoolean(httpSession.getAttribute("isLogin").toString());
+
+		//2 validation data
+		if(httpSessionIsLogin) // if httpsession has isLogin true -> validation httpsession
+		{
+			if(!httpSessionUserSeq.equals(cookieUserSeq))
+			{
+				throw new AuthException(ErrorCode.INVALID_PARAMETER);
+			}
+			if(!httpSessionUserToken.equals(cookieUserToken))
+			{
+				throw new AuthException(ErrorCode.INVALID_PARAMETER);
+			}
+		}
+		else // if httpsession has isLogin false or not has value -> validation redissession
+		{
+			Map<String, Object> redisSessionData = redisSessionManager.getSession(cookieRedisSessionId);
+
+			if(!redisSessionData.get("userToken").equals(cookieUserToken))
+			{
+				throw new AuthException(ErrorCode.INVALID_PARAMETER);
+			}
+
+			if(!redisSessionData.get("userSeq").equals(cookieUserSeq))
+			{
+				throw new AuthException(ErrorCode.INVALID_PARAMETER);
+			}
+
+			//save login status
+			httpSession.setAttribute("userSeq",cookieUserSeq);
+			httpSession.setAttribute("userToken",cookieUserToken);
+			httpSession.setAttribute("isLogin",true);
+		}
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("code",ErrorCode.SUCCESS.getCode());
