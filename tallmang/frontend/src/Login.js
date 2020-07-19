@@ -1,6 +1,6 @@
 import React,{Fragment} from 'react';
 import axios from 'axios';
-import { Form, Button, Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import md5 from 'md5'
 
 class Login extends React.Component{
@@ -11,9 +11,9 @@ class Login extends React.Component{
 		{
 			userId : '',
 			password : '',
-			autoLogin: false
+			autoLogin: false,
+			errorMsg : ''
 		}
-		//this.ajaxLogin = this.ajaxLogin.bind(this); -> replace arrow function
 	}
 	updateState = (e) => {
         this.setState({
@@ -27,10 +27,7 @@ class Login extends React.Component{
         this.setState({ autoLogin : checked});
     };
 
-	
-	
 	ajaxLogin = (e) =>{
-	console.log(this.state);
 		let url = '/login';
 		let options = {
 		            method: 'POST',
@@ -47,13 +44,21 @@ class Login extends React.Component{
 		            	autoLogin : this.state.autoLogin
 		            }
 		        };
-		let response = axios(options);
-		let responseOK = response && response.status === 200 && response.statusText === 'OK';
-		if (responseOK) {
-		    let data = response.data;
-		    console.log(data);
-		    // do something with data
-		}
+		axios(options).then((response)=>{
+		    if(response.status === 200)
+		    {
+		        let result = response.data;
+		        if(result.code !== 200 )
+		        {
+		            this.setState({
+		                errorMsg : result.message
+		            });
+		        }
+		    }
+		}).catch((error)=>
+		{
+		    console.log(error);
+		});
 	}
 
 	render() {
@@ -72,6 +77,7 @@ class Login extends React.Component{
     							<Form.Group controlId="formBasicPassword">
     								<Form.Label>Password</Form.Label>
     								<Form.Control type="password" placeholder="Password" name="password" onChange={this.updateState}/>
+    								<p className="text-danger" id="errorMsg">{this.state.errorMsg}</p>
     							</Form.Group>
     							<Form.Group controlId="formBasicCheckbox">
     								<Form.Check type="checkbox" label="Auto Login" name="autoLogin" defaultChecked={this.state.autoLogin} onChange={this.checkboxHandle}/>
@@ -79,7 +85,11 @@ class Login extends React.Component{
     							<Button variant="primary" onClick={this.ajaxLogin}>Submit</Button>
     						</Form>
     					</Col>
-    					<Col sm></Col>
+                        <Col sm>
+    					    <Alert variant="danger">
+                                    This is a danger alert—check it out!
+                            </Alert>
+                        </Col>
     				</Row>
     			</Container>
     		</Fragment>

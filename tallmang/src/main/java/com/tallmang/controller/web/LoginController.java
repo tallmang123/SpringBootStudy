@@ -41,10 +41,12 @@ public class LoginController {
 		Map<String, Object> manualLoginResult = accountService.manualLoginProcess(request, response, userId, md5Password, isAutoLogin);
 		return Json.encodeJsonString(manualLoginResult);
 	}
-	
-	public String AutoLogin()
-	{
-		return null;
+
+	@PostMapping(value="/autoLogin")
+	@ResponseBody
+	public String AutoLogin() throws Exception {
+		Map<String, Object> autoLoginResult = accountService.autoLoginProcess();
+		return Json.encodeJsonString(autoLoginResult);
 	}
 
 }

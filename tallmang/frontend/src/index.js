@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Link, Route, BrowserRouter as Router } from "react-router-dom"
+import { Route, BrowserRouter as Router } from "react-router-dom"
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import App from './App';
@@ -13,6 +13,7 @@ ReactDOM.render(
       <div>
         <Route exact path="/" component={App} />
         <Route path="/login" component={Login} />
+        <Route path="/autoLogin" component={Login} />
       </div>
     </Router>,
   document.getElementById('root')

@@ -33,17 +33,11 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class AccountService {
 
 	@Autowired
-	RedisSessionManager redisSessionManager;
-
-	@Autowired
-	CookieManager cookieManager;
-
-	@Autowired
 	AccountMapper accountMapper;
-	
+
 	@Autowired
 	AccountRepository accountRepository;
-	
+
 	@Autowired
 	RedisTemplate<String, Object> redisTemplate;
 
@@ -70,6 +64,7 @@ public class AccountService {
 		int dataExpire = isAutoLogin ? 60*60*24*30 : 60*60;
 		int userSeq = accountEntity.getSeq();
 
+		CookieManager cookieManager = new CookieManager();
 		//4. save user key on cookie
 		String userTSeq = AES256.encode(Integer.toString(userSeq));
 		cookieManager.setData("TSEQ", userTSeq, dataExpire);
@@ -85,6 +80,8 @@ public class AccountService {
 		sessionSaveData.put("userId",accountEntity.getId());
 		sessionSaveData.put("userSeq",accountEntity.getSeq());
 		sessionSaveData.put("userToken",token);
+
+		RedisSessionManager redisSessionManager = new RedisSessionManager();
 		String redisSessionKey = redisSessionManager.createSession(sessionKey,sessionSaveData);
 
 		// 6. save session key on cookie
@@ -157,6 +154,7 @@ public class AccountService {
 		}
 		else // if httpsession has isLogin false or not has value -> validation redissession
 		{
+			RedisSessionManager redisSessionManager = new RedisSessionManager();
 			Map<String, Object> redisSessionData = redisSessionManager.getSession(cookieRedisSessionId);
 
 			if(!redisSessionData.get("userToken").equals(cookieUserToken))
@@ -181,31 +179,31 @@ public class AccountService {
 
 		return result;
 	}
-	
+
 	public AccountVO getAccountInfo()
 	{
 		AccountVO account = accountMapper.getUser();
 		System.out.println(account.toString());
 		return account;
 	}
-	
+
 	public List<AccountEntity> getAccountInfoJpa()
 	{
 		List<AccountEntity> accountEntityList = accountRepository.findAll();
 
 		return accountEntityList;
 	}
-	
+
 	public String getRedisData()
-	{	
+	{
 		redisTemplate.opsForValue().set("test", "This is Test");
 		String result = (String) redisTemplate.opsForValue().get("test");
 		return result;
 	}
-	
+
 	public String getSessionRedis(HttpSession httpSession)
 	{
-		return httpSession.getId();	
+		return httpSession.getId();
 	}
 
 }
