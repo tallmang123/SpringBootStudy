@@ -9,9 +9,9 @@ public class Json {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static String encodeJsonString(Map<String,Object> map ) throws Exception
+    public static String encodeJsonString(Object object) throws Exception
     {
-        return objectMapper.writeValueAsString(map);
+        return objectMapper.writeValueAsString(object);
     }
 
     public static Map<String,Object> decodeJsonString(String jsonString) throws Exception

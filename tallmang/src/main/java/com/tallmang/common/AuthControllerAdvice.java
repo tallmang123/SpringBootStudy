@@ -11,7 +11,7 @@ import java.util.Map;
 /*
 * Manage Exception Handler
 */
-@ControllerAdvice
+//@ControllerAdvice
 public class AuthControllerAdvice {
 
     @ExceptionHandler(AuthException.class)

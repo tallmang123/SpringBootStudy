@@ -1,11 +1,15 @@
 package com.tallmang.controller.api;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpSession;
 
+import com.tallmang.common.Json;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tallmang.entity.AccountEntity;
@@ -28,9 +32,9 @@ public class TestController {
 	
 	
 	@GetMapping(value="/jpa")
-	public String testJpa() {
+	public String testJpa() throws Exception{
 		List<AccountEntity> accountEntityList = accountService.getAccountInfoJpa();
-		return accountEntityList.toString();
+		return Json.encodeJsonString(accountEntityList);
 	}
 	
 	@GetMapping(value="redis")
@@ -44,7 +48,13 @@ public class TestController {
 		String result = accountService.getSessionRedis(httpSession);
 		return result;
 	}
-	
-	
 
+	@PostMapping(value="postTest")
+	public String testPost(@RequestBody Map<String,Object> map) throws Exception
+	{
+		List<AccountEntity> accountEntityList = accountService.getAccountInfoJpa();
+		//System.out.println("CONTROLLER");
+		//System.out.println(Json.encodeJsonString(accountEntityList));
+		return Json.encodeJsonString(accountEntityList);
+	}
 }

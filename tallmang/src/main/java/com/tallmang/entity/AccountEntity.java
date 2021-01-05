@@ -26,4 +26,16 @@ public class AccountEntity {
 	private String	status;
 	@Column
 	private String 	addTime;
+
+	@Override
+	public String toString() {
+		return "AccountEntity{" +
+				"seq=" + seq +
+				", id='" + id + '\'' +
+				", password='" + password + '\'' +
+				", salt='" + salt + '\'' +
+				", status='" + status + '\'' +
+				", addTime='" + addTime + '\'' +
+				'}';
+	}
 }
