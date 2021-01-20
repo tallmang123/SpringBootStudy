@@ -47,7 +47,7 @@ public class AES256 {
     }
 
     // 암호화
-    public static String encode(String str) throws
+    public String encode(String str) throws
             NoSuchAlgorithmException,
             NoSuchPaddingException,
             InvalidKeyException,
@@ -63,7 +63,7 @@ public class AES256 {
     }
 
     //복호화
-    public static String decode(String str) throws
+    public String decode(String str) throws
             NoSuchAlgorithmException,
             NoSuchPaddingException,
             InvalidKeyException,

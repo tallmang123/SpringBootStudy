@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tallmang.common.AuthException;
 import com.tallmang.common.ErrorCode;
 import com.tallmang.common.Json;
+import com.tallmang.common.encrypt.AES256;
+import org.apache.commons.io.IOUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.ServletRequestUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.ContentCachingRequestWrapper;
@@ -19,12 +22,10 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 @Aspect
@@ -35,69 +36,64 @@ public class TallmangAop {
 	@Around("execution(* com.tallmang.controller.api.*.*(..))")
 	public Object commonApiAspect(final ProceedingJoinPoint joinPoint) throws Throwable
 	{
-	    try
-        {
-            Object aopObject = joinPoint.proceed();
+	    try {
+            ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            String requestType = attr.getRequest().getMethod().toString();
+            Object aopObject = null;
+            if (attr.getRequest().getMethod().equals("POST"))
+            {
+                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(IOUtils.toByteArray(attr.getRequest().getInputStream()));
 
-            this.setLogData(joinPoint.getSignature().getName(), joinPoint.getArgs(), aopObject.toString());
+                BufferedReader reader = new BufferedReader(new InputStreamReader(byteArrayInputStream,"UTF-8"));
+                String requestString = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+
+                aopObject = joinPoint.proceed(new Object[] {AES256.getInstance().decode(requestString)});
+            }
+            else
+            {
+                aopObject = joinPoint.proceed();
+            }
+
+            this.setLogData(joinPoint.getSignature().getName(), joinPoint.getArgs(), aopObject);
             return aopObject;
         }
 	    catch(AuthException authException)
         {
+            authException.printStackTrace();
             Map<String,Object> exceptionData = new HashMap<>();
             exceptionData.put("code",authException.getErrorCode());
             exceptionData.put("message",authException.getErrorMessage());
 
-            this.setLogData(joinPoint.getSignature().getName(), joinPoint.getArgs(), Json.encodeJsonString(exceptionData));
+            this.setLogData(joinPoint.getSignature().getName(), joinPoint.getArgs(), exceptionData);
 
             return Json.encodeJsonString(exceptionData);
 
         }
 	    catch(Exception exception)
         {
+            exception.printStackTrace();
             Map<String,Object> exceptionData = new HashMap<>();
             exceptionData.put("code", ErrorCode.INTERNAL_ERROR.getCode());
             exceptionData.put("message",ErrorCode.INTERNAL_ERROR.getMessage());
 
-            this.setLogData(joinPoint.getSignature().getName(), joinPoint.getArgs(), Json.encodeJsonString(exceptionData));
-
+            this.setLogData(joinPoint.getSignature().getName(), joinPoint.getArgs(), exceptionData);
+            System.out.println(Json.encodeJsonString(exceptionData));
             return Json.encodeJsonString(exceptionData);
         }
-	    /*Object aopObject = joinPoint.proceed();
-
-		ServletRequestAttributes attr = (ServletRequestAttributes)RequestContextHolder.currentRequestAttributes();
-		HttpServletRequest request = attr.getRequest();
-        Object inputParam = "";
-        for (Object obj : joinPoint.getArgs())
-        {
-            if (obj instanceof String) {
-                inputParam = obj;
-            }
-			if (obj instanceof Map) {
-				inputParam = Json.encodeJsonString(obj);
-			}
-        }
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss");
-        Date currentDate = new Date();
-
-        LinkedHashMap <String,String> apiLogMap =  new LinkedHashMap<>();
-        apiLogMap.put("Date",dateFormat.format(currentDate));
-        apiLogMap.put("Api",request.getRequestURI());
-        apiLogMap.put("Controller",joinPoint.getSignature().getName());
-        apiLogMap.put("RequestData",inputParam.toString());
-        apiLogMap.put("ResponseData",aopObject.toString());
-        logger.info(apiLogMap.toString());
-
-		return aopObject;*/
 	}
 
-    public void setLogData(String controller, Object[] requestMap, String response) throws Exception
+    public void setLogData(String controller, Object[] requestMap, Object responseObject) throws Exception
     {
         LinkedHashMap <String,String> apiLogMap =  new LinkedHashMap<>();
 
         ServletRequestAttributes attr = (ServletRequestAttributes)RequestContextHolder.currentRequestAttributes();
         String requestUri = attr.getRequest().getRequestURI();
+
+        String response = "";
+        if(responseObject != null)
+        {
+            response = Json.encodeJsonString(responseObject);
+        }
 
         Object inputParam = "";
         for (Object obj : requestMap)

@@ -1,9 +1,6 @@
 package com.tallmang.service;
 
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +13,7 @@ import com.tallmang.common.ErrorCode;
 import com.tallmang.common.RedisSessionManager;
 import com.tallmang.common.encrypt.AES256;
 import com.tallmang.common.encrypt.SHA256;
+import com.tallmang.repository.HRRecessInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -66,16 +64,16 @@ public class AccountService {
 
 		CookieManager cookieManager = new CookieManager();
 		//4. save user key on cookie
-		String userTSeq = AES256.encode(Integer.toString(userSeq));
+		String userTSeq = AES256.getInstance().encode(Integer.toString(userSeq));
 		cookieManager.setData("TSEQ", userTSeq, dataExpire);
 
 		//5. save user token on cookie
 		String token = SHA256.encrypt("tallmang_auth_token" + System.currentTimeMillis());
-		String userTToken = AES256.encode(token);
+		String userTToken = AES256.getInstance().encode(token);
 		cookieManager.setData("TTOK", userTToken, dataExpire);
 
 		//6. create redis session
-		String sessionKey = Base64.getEncoder().encodeToString(AES256.encode(accountEntity.getId() + "*****" +System.currentTimeMillis()).getBytes());
+		String sessionKey = Base64.getEncoder().encodeToString(AES256.getInstance().encode(accountEntity.getId() + "*****" +System.currentTimeMillis()).getBytes());
 		Map<String,Object> sessionSaveData = new HashMap<>();
 		sessionSaveData.put("userId",accountEntity.getId());
 		sessionSaveData.put("userSeq",accountEntity.getSeq());
@@ -130,8 +128,8 @@ public class AccountService {
 		}
 
 		//decode data
-		cookieUserSeq = AES256.decode(cookieUserSeq);
-		cookieUserToken = AES256.decode(cookieUserToken);
+		cookieUserSeq = AES256.getInstance().decode(cookieUserSeq);
+		cookieUserToken = AES256.getInstance().decode(cookieUserToken);
 
 
 		//get http session data
